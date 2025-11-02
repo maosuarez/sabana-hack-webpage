@@ -18,6 +18,7 @@ async function seedDatabase() {
     await db.collection("alerts").deleteMany({})
     await db.collection("risk_zones").deleteMany({})
     await db.collection("meeting_points").deleteMany({})
+    await db.collection("evacuation_routes").deleteMany({})
     await db.collection("courses").deleteMany({})
     await db.collection("videos").deleteMany({})
     await db.collection("resources").deleteMany({})
@@ -194,6 +195,179 @@ async function seedDatabase() {
       },
     ])
     console.log(`✅ Created ${meetingPointsResult.insertedCount} meeting points`)
+
+    // Seed Evacuation Routes
+    console.log("🛣️  Seeding evacuation routes...")
+    const evacuationRoutesResult = await db.collection("evacuation_routes").insertMany([
+      {
+        name: "Ruta A - Norte a Parque Simón Bolívar",
+        description: "Ruta principal de evacuación desde zona norte hacia el refugio del Parque Simón Bolívar",
+        coordinates: [
+          { lat: 4.711, lng: -74.0721, order: 0 },
+          { lat: 4.695, lng: -74.0815, order: 1 },
+          { lat: 4.68, lng: -74.0875, order: 2 },
+          { lat: 4.657, lng: -74.0918, order: 3 },
+        ],
+        startPoint: {
+          name: "Zona Norte - Barrio Popular",
+          lat: 4.711,
+          lng: -74.0721,
+        },
+        endPoint: {
+          name: "Parque Simón Bolívar",
+          lat: 4.657,
+          lng: -74.0918,
+        },
+        distance: 7500,
+        estimatedTime: 90,
+        difficulty: "easy",
+        status: "active",
+        accessibility: true,
+        warnings: ["Cruce de avenida principal en punto 2"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Ruta B - Centro a Estadio El Campín",
+        description: "Ruta de evacuación desde el distrito financiero hacia el Estadio El Campín",
+        coordinates: [
+          { lat: 4.6097, lng: -74.0817, order: 0 },
+          { lat: 4.625, lng: -74.08, order: 1 },
+          { lat: 4.64, lng: -74.078, order: 2 },
+          { lat: 4.6467, lng: -74.0776, order: 3 },
+        ],
+        startPoint: {
+          name: "Zona Centro - Distrito Financiero",
+          lat: 4.6097,
+          lng: -74.0817,
+        },
+        endPoint: {
+          name: "Estadio El Campín",
+          lat: 4.6467,
+          lng: -74.0776,
+        },
+        distance: 4200,
+        estimatedTime: 50,
+        difficulty: "easy",
+        status: "active",
+        accessibility: true,
+        warnings: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Ruta C - Sur (Ladera) a Plaza de Bolívar",
+        description: "Ruta de evacuación de emergencia desde zona de ladera hacia centro histórico",
+        coordinates: [
+          { lat: 4.5709, lng: -74.1273, order: 0 },
+          { lat: 4.58, lng: -74.11, order: 1 },
+          { lat: 4.59, lng: -74.09, order: 2 },
+          { lat: 4.5981, lng: -74.0758, order: 3 },
+        ],
+        startPoint: {
+          name: "Zona Sur - Ladera",
+          lat: 4.5709,
+          lng: -74.1273,
+        },
+        endPoint: {
+          name: "Plaza de Bolívar",
+          lat: 4.5981,
+          lng: -74.0758,
+        },
+        distance: 6800,
+        estimatedTime: 120,
+        difficulty: "difficult",
+        status: "active",
+        accessibility: false,
+        warnings: ["Pendiente pronunciada", "Terreno irregular", "Posible deslizamiento"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Ruta D - Este (Industrial) a Parque Nacional",
+        description: "Ruta de evacuación desde zona industrial hacia Parque Nacional",
+        coordinates: [
+          { lat: 4.6486, lng: -74.0536, order: 0 },
+          { lat: 4.64, lng: -74.058, order: 1 },
+          { lat: 4.63, lng: -74.062, order: 2 },
+          { lat: 4.62, lng: -74.065, order: 3 },
+        ],
+        startPoint: {
+          name: "Zona Este - Industrial",
+          lat: 4.6486,
+          lng: -74.0536,
+        },
+        endPoint: {
+          name: "Parque Nacional",
+          lat: 4.62,
+          lng: -74.065,
+        },
+        distance: 3500,
+        estimatedTime: 45,
+        difficulty: "moderate",
+        status: "active",
+        accessibility: true,
+        warnings: ["Tráfico vehicular pesado"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Ruta E - Oeste a Centro Comercial Andino",
+        description: "Ruta alternativa desde zona residencial oeste hacia refugio temporal",
+        coordinates: [
+          { lat: 4.6533, lng: -74.1234, order: 0 },
+          { lat: 4.66, lng: -74.1, order: 1 },
+          { lat: 4.665, lng: -74.08, order: 2 },
+          { lat: 4.67, lng: -74.055, order: 3 },
+        ],
+        startPoint: {
+          name: "Zona Oeste - Residencial",
+          lat: 4.6533,
+          lng: -74.1234,
+        },
+        endPoint: {
+          name: "Centro Comercial Andino",
+          lat: 4.67,
+          lng: -74.055,
+        },
+        distance: 8200,
+        estimatedTime: 100,
+        difficulty: "moderate",
+        status: "active",
+        accessibility: true,
+        warnings: ["Ruta larga", "Múltiples cruces"],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Ruta F - Emergencia Rápida Centro",
+        description: "Ruta de evacuación rápida para emergencias críticas en el centro",
+        coordinates: [
+          { lat: 4.6097, lng: -74.0817, order: 0 },
+          { lat: 4.605, lng: -74.078, order: 1 },
+          { lat: 4.5981, lng: -74.0758, order: 2 },
+        ],
+        startPoint: {
+          name: "Distrito Financiero",
+          lat: 4.6097,
+          lng: -74.0817,
+        },
+        endPoint: {
+          name: "Plaza de Bolívar",
+          lat: 4.5981,
+          lng: -74.0758,
+        },
+        distance: 1800,
+        estimatedTime: 20,
+        difficulty: "easy",
+        status: "active",
+        accessibility: true,
+        warnings: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ])
+    console.log(`✅ Created ${evacuationRoutesResult.insertedCount} evacuation routes`)
 
     // Seed Alerts
     console.log("🚨 Seeding alerts...")
@@ -529,6 +703,7 @@ async function seedDatabase() {
     console.log(`   Users: ${usersResult.insertedCount}`)
     console.log(`   Risk Zones: ${riskZonesResult.insertedCount}`)
     console.log(`   Meeting Points: ${meetingPointsResult.insertedCount}`)
+    console.log(`   Evacuation Routes: ${evacuationRoutesResult.insertedCount}`)
     console.log(`   Alerts: ${alertsResult.insertedCount}`)
     console.log(`   Courses: ${coursesResult.insertedCount}`)
     console.log(`   Videos: ${videosResult.insertedCount}`)

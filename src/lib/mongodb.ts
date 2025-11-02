@@ -30,4 +30,10 @@ export async function getDatabase(): Promise<Db> {
   return client.db("cruz_roja_db")
 }
 
+export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
+  const client = await clientPromise
+  const db = client.db("cruz_roja_db")
+  return { client, db }
+}
+
 export default clientPromise
