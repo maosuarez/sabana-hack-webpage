@@ -1,46 +1,67 @@
 import { NextResponse } from "next/server"
-import { getDatabase } from "@/lib/mongodb"
-import { getSession } from "@/lib/auth"
+import { connectToDatabase } from "@/lib/mongodb"
 
 export async function GET() {
   try {
-    const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const { db } = await connectToDatabase()
 
-    const db = await getDatabase()
+    // Get current date range
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-    // Get active alerts count
-    const alertsCollection = db.collection("alerts")
-    const activeAlerts = await alertsCollection.countDocuments({ status: "active" })
-
-    // Get total incidents this month
     const incidentsCollection = db.collection("incidents")
-    const startOfMonth = new Date()
-    startOfMonth.setDate(1)
-    startOfMonth.setHours(0, 0, 0, 0)
 
-    const totalIncidents = await incidentsCollection.countDocuments({
-      createdAt: { $gte: startOfMonth },
-    })
+    const [activeIncidents, totalIncidentsThisMonth, criticalIncidents, resolvedIncidents, totalAffectedPeople] =
+      await Promise.all([
+        incidentsCollection.countDocuments({ status: { $in: ["reported", "in-progress"] } }),
+        incidentsCollection.countDocuments({ createdAt: { $gte: startOfMonth } }),
+        incidentsCollection.countDocuments({ severity: "critical", status: { $in: ["reported", "in-progress"] } }),
+        incidentsCollection.countDocuments({ status: "resolved", createdAt: { $gte: startOfMonth } }),
+        incidentsCollection
+          .aggregate([
+            { $match: { status: "resolved" } },
+            { $group: { _id: null, total: { $sum: "$affectedPeople" } } },
+          ])
+          .toArray(),
+      ])
 
-    // Get active volunteers
-    const volunteersCollection = db.collection("volunteers")
-    const activeVolunteers = await volunteersCollection.countDocuments({
-      status: "active",
-    })
-
-    // Get people helped
-    const peopleHelped = await incidentsCollection
-      .aggregate([{ $match: { status: "resolved" } }, { $group: { _id: null, total: { $sum: "$peopleAffected" } } }])
+    // Calculate average response time
+    const responseTimeData = await incidentsCollection
+      .aggregate([
+        {
+          $match: {
+            status: "resolved",
+            "responseTeam.assignedAt": { $exists: true },
+            "responseTeam.resolvedAt": { $exists: true },
+          },
+        },
+        {
+          $project: {
+            responseTime: {
+              $divide: [
+                { $subtract: ["$responseTeam.resolvedAt", "$responseTeam.assignedAt"] },
+                60000, // Convert to minutes
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            avgResponseTime: { $avg: "$responseTime" },
+          },
+        },
+      ])
       .toArray()
 
     return NextResponse.json({
-      activeAlerts,
-      totalIncidents,
-      activeVolunteers,
-      peopleHelped: peopleHelped[0]?.total || 0,
+      activeAlerts: activeIncidents,
+      totalIncidents: totalIncidentsThisMonth,
+      criticalIncidents,
+      resolvedIncidents,
+      peopleHelped: totalAffectedPeople[0]?.total || 0,
+      averageResponseTime: Math.round(responseTimeData[0]?.avgResponseTime || 0),
     })
   } catch (error) {
     console.error("[v0] Get dashboard stats error:", error)

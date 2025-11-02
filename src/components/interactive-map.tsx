@@ -35,7 +35,7 @@ export function InteractiveMap({
   meetingPoints = [],
   evacuationRoutes = [],
 }: InteractiveMapProps) {
-  const [center, setCenter] = useState<[number, number]>([4.711, -74.0721]) // Bogotá, Colombia
+  const [center, setCenter] = useState<[number, number]>([4.586, -74.220]) // Bogotá, Colombia
 
   // Custom icons
   const meetingPointIcon = L.icon({

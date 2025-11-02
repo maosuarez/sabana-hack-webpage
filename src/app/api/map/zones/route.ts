@@ -4,13 +4,8 @@ import { getSession } from "@/lib/auth"
 
 export async function GET() {
   try {
-    const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const db = await getDatabase()
-    const zonesCollection = db.collection("risk_zones")
+    const zonesCollection = db.collection("riskzones")
 
     const zones = await zonesCollection.find({}).toArray()
 
@@ -30,7 +25,7 @@ export async function POST(request: Request) {
 
     const data = await request.json()
     const db = await getDatabase()
-    const zonesCollection = db.collection("risk_zones")
+    const zonesCollection = db.collection("riskzones")
 
     const result = await zonesCollection.insertOne({
       ...data,

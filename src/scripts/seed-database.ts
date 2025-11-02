@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb"
+import bcrypt from "bcryptjs"
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017"
 const DB_NAME = "cruz_roja_db"
@@ -16,9 +17,11 @@ async function seedDatabase() {
     console.log("🗑️  Clearing existing data...")
     await db.collection("users").deleteMany({})
     await db.collection("alerts").deleteMany({})
-    await db.collection("risk_zones").deleteMany({})
-    await db.collection("meeting_points").deleteMany({})
-    await db.collection("evacuation_routes").deleteMany({})
+    await db.collection("incidents").deleteMany({})
+    await db.collection("dashboardstats").deleteMany({})
+    await db.collection("riskzones").deleteMany({})
+    await db.collection("meetingpoints").deleteMany({})
+    await db.collection("evacuationroutes").deleteMany({})
     await db.collection("courses").deleteMany({})
     await db.collection("videos").deleteMany({})
     await db.collection("resources").deleteMany({})
@@ -61,7 +64,7 @@ async function seedDatabase() {
 
     // Seed Risk Zones
     console.log("🗺️  Seeding risk zones...")
-    const riskZonesResult = await db.collection("risk_zones").insertMany([
+    const riskZonesResult = await db.collection("riskzones").insertMany([
       {
         name: "Zona Norte - Barrio Popular",
         level: "high",
@@ -127,7 +130,7 @@ async function seedDatabase() {
 
     // Seed Meeting Points
     console.log("📍 Seeding meeting points...")
-    const meetingPointsResult = await db.collection("meeting_points").insertMany([
+    const meetingPointsResult = await db.collection("meetingpoints").insertMany([
       {
         name: "Parque Simón Bolívar",
         type: "primary",
@@ -198,7 +201,7 @@ async function seedDatabase() {
 
     // Seed Evacuation Routes
     console.log("🛣️  Seeding evacuation routes...")
-    const evacuationRoutesResult = await db.collection("evacuation_routes").insertMany([
+    const evacuationRoutesResult = await db.collection("evacuationroutes").insertMany([
       {
         name: "Ruta A - Norte a Parque Simón Bolívar",
         description: "Ruta principal de evacuación desde zona norte hacia el refugio del Parque Simón Bolívar",
@@ -420,6 +423,128 @@ async function seedDatabase() {
       },
     ])
     console.log(`✅ Created ${alertsResult.insertedCount} alerts`)
+
+    console.log("🚨 Seeding incidents...")
+    const incidentsData = []
+    const incidentTypes = ["medical", "fire", "flood", "earthquake", "accident", "other"]
+    const severities = ["low", "medium", "high", "critical"]
+    const statuses = ["reported", "in-progress", "resolved", "closed"]
+    const departments = ["Cundinamarca", "Antioquia", "Valle del Cauca", "Atlántico", "Santander"]
+    const cities = ["Bogotá", "Medellín", "Cali", "Barranquilla", "Bucaramanga"]
+
+    // Create 50 incidents with varied data
+    for (let i = 0; i < 50; i++) {
+      const createdDate = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000)
+      const type = incidentTypes[Math.floor(Math.random() * incidentTypes.length)]
+      const severity = severities[Math.floor(Math.random() * severities.length)]
+      const status = statuses[Math.floor(Math.random() * statuses.length)]
+      const deptIndex = Math.floor(Math.random() * departments.length)
+
+      const incident: any = {
+        title: `${type === "medical" ? "Emergencia Médica" : type === "fire" ? "Incendio" : type === "flood" ? "Inundación" : type === "earthquake" ? "Terremoto" : type === "accident" ? "Accidente" : "Otro Incidente"} #${i + 1}`,
+        description: `Incidente de tipo ${type} reportado en la zona. ${severity === "critical" ? "Requiere atención inmediata." : "Situación bajo control."}`,
+        type,
+        severity,
+        status,
+        location: {
+          type: "Point",
+          coordinates: [-74.0721 + (Math.random() - 0.5) * 0.2, 4.6097 + (Math.random() - 0.5) * 0.2],
+          address: `Calle ${Math.floor(Math.random() * 100)} #${Math.floor(Math.random() * 50)}-${Math.floor(Math.random() * 99)}`,
+          city: cities[deptIndex],
+          department: departments[deptIndex],
+        },
+        reporter: {
+          name: `Ciudadano ${i + 1}`,
+          phone: `+57 ${300 + Math.floor(Math.random() * 20)} ${Math.floor(Math.random() * 900 + 100)} ${Math.floor(Math.random() * 9000 + 1000)}`,
+          email: `ciudadano${i + 1}@email.com`,
+        },
+        attachments: [],
+        affectedPeople: Math.floor(Math.random() * 20) + 1,
+        notes: status === "resolved" ? "Incidente resuelto satisfactoriamente" : undefined,
+        createdAt: createdDate,
+        updatedAt: new Date(),
+      }
+
+      // Add response team data for in-progress and resolved incidents
+      if (status === "in-progress" || status === "resolved") {
+        const assignedAt = new Date(createdDate.getTime() + Math.random() * 30 * 60 * 1000)
+        const arrivedAt = new Date(assignedAt.getTime() + Math.random() * 45 * 60 * 1000)
+
+        incident.responseTeam = {
+          teamId: `TEAM-${Math.floor(Math.random() * 10) + 1}`,
+          assignedAt,
+          arrivedAt,
+        }
+
+        if (status === "resolved") {
+          incident.responseTeam.resolvedAt = new Date(arrivedAt.getTime() + Math.random() * 120 * 60 * 1000)
+        }
+      }
+
+      incidentsData.push(incident)
+    }
+
+    const incidentsResult = await db.collection("incidents").insertMany(incidentsData)
+    console.log(`✅ Created ${incidentsResult.insertedCount} incidents`)
+
+    console.log("📊 Seeding dashboard statistics...")
+    const statsData = []
+
+    // Create stats for the last 30 days
+    for (let i = 0; i < 30; i++) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      date.setHours(0, 0, 0, 0)
+
+      const dailyIncidents = Math.floor(Math.random() * 10) + 5
+      const activeIncidents = Math.floor(dailyIncidents * 0.3)
+      const resolvedIncidents = dailyIncidents - activeIncidents
+      const criticalIncidents = Math.floor(dailyIncidents * 0.2)
+
+      statsData.push({
+        date,
+        source: "internal",
+        metrics: {
+          totalIncidents: dailyIncidents,
+          activeIncidents,
+          resolvedIncidents,
+          criticalIncidents,
+          averageResponseTime: Math.floor(Math.random() * 60) + 30,
+          affectedPeople: Math.floor(Math.random() * 100) + 20,
+        },
+        incidentsByType: {
+          medical: Math.floor(Math.random() * 5),
+          fire: Math.floor(Math.random() * 3),
+          flood: Math.floor(Math.random() * 2),
+          earthquake: Math.floor(Math.random() * 1),
+          accident: Math.floor(Math.random() * 4),
+          other: Math.floor(Math.random() * 2),
+        },
+        incidentsBySeverity: {
+          low: Math.floor(dailyIncidents * 0.3),
+          medium: Math.floor(dailyIncidents * 0.4),
+          high: Math.floor(dailyIncidents * 0.2),
+          critical: criticalIncidents,
+        },
+        incidentsByDepartment: [
+          { name: "Cundinamarca", count: Math.floor(Math.random() * 5) + 2 },
+          { name: "Antioquia", count: Math.floor(Math.random() * 3) + 1 },
+          { name: "Valle del Cauca", count: Math.floor(Math.random() * 3) + 1 },
+          { name: "Atlántico", count: Math.floor(Math.random() * 2) + 1 },
+          { name: "Santander", count: Math.floor(Math.random() * 2) + 1 },
+        ],
+        responseMetrics: {
+          averageAssignmentTime: Math.floor(Math.random() * 15) + 5,
+          averageArrivalTime: Math.floor(Math.random() * 30) + 15,
+          averageResolutionTime: Math.floor(Math.random() * 90) + 30,
+        },
+        createdAt: date,
+        updatedAt: date,
+      })
+    }
+
+    const statsResult = await db.collection("dashboardstats").insertMany(statsData)
+    console.log(`✅ Created ${statsResult.insertedCount} dashboard statistics`)
 
     // Seed Courses
     console.log("📚 Seeding courses...")
@@ -701,6 +826,8 @@ async function seedDatabase() {
     console.log("\n🎉 Database seeded successfully!")
     console.log("\n📊 Summary:")
     console.log(`   Users: ${usersResult.insertedCount}`)
+    console.log(`   Incidents: ${incidentsResult.insertedCount}`)
+    console.log(`   Dashboard Stats: ${statsResult.insertedCount}`)
     console.log(`   Risk Zones: ${riskZonesResult.insertedCount}`)
     console.log(`   Meeting Points: ${meetingPointsResult.insertedCount}`)
     console.log(`   Evacuation Routes: ${evacuationRoutesResult.insertedCount}`)
@@ -709,6 +836,8 @@ async function seedDatabase() {
     console.log(`   Videos: ${videosResult.insertedCount}`)
     console.log(`   Resources: ${resourcesResult.insertedCount}`)
     console.log("\n✅ You can now use the application with test data!")
+    console.log("\n💡 To run this script: node scripts/seed-database.ts")
+    console.log("💡 Make sure to set MONGODB_URI environment variable first")
   } catch (error) {
     console.error("❌ Error seeding database:", error)
     throw error

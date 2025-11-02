@@ -3,17 +3,11 @@ import { getDatabase } from "@/lib/mongodb"
 import { getSession } from "@/lib/auth"
 
 export async function GET() {
-  try {
-    const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
+  try {    
     const db = await getDatabase()
     const alertsCollection = db.collection("alerts")
 
     const alerts = await alertsCollection.find({}).sort({ createdAt: -1 }).limit(50).toArray()
-
     return NextResponse.json({ alerts })
   } catch (error) {
     console.error("[v0] Get alerts error:", error)
