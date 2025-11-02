@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Bell, AlertTriangle, MapPin, Clock, CheckCircle2, XCircle, Activity } from "lucide-react"
-import { useAlerts } from "@/lib/use-alerts"
+import { useAlerts } from "@/lib/hooks/use-alerts"
 
 export default function AlertasPage() {
   const { alerts, loading, sendAlert, updateAlertStatus } = useAlerts()
@@ -22,7 +22,7 @@ export default function AlertasPage() {
     type: "",
     location: "",
     description: "",
-    severity: "medium",
+    severity: "medium" as "high" | "medium" | "low" | "critical" | undefined,
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -348,7 +348,7 @@ export default function AlertasPage() {
                         <Label htmlFor="severity">Severidad</Label>
                         <Select
                           value={formData.severity}
-                          onValueChange={(value) => setFormData({ ...formData, severity: value })}
+                          onValueChange={(value) => setFormData({ ...formData, severity: value as "high" | "medium" | "low" | "critical" | undefined })}
                         >
                           <SelectTrigger>
                             <SelectValue />

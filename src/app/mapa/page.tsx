@@ -108,7 +108,7 @@ export default function MapaPage() {
                       </div>
                     </CardHeader>
                   <CardContent>
-                    <InteractiveMap selectedLayer={selectedLayer} />
+                    <InteractiveMap selectedLayer={selectedLayer} selectedNeighborhood="la-maria" />
                   </CardContent>
                 </Card>
 
