@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Algoritmos Moleculares
 
-## Getting Started
+Bienvenido al proyecto **Algoritmos Moleculares**, desarrollado por nuestro grupo con el mismo nombre. Este proyecto está basado en **Next.js** y utiliza **MongoDB** como base de datos.
 
-First, run the development server:
+## Requisitos previos
+
+Antes de ejecutar el proyecto, asegúrate de tener instalado:
+
+- Node.js (versión recomendada 18 o superior)  
+- npm  
+- MongoDB (local o remoto)  
+
+---
+
+## Configuración
+
+1. Clonar el repositorio:
+
+```bash
+git clone <URL_DEL_REPOSITORIO>
+````
+
+2. Instalar las dependencias del proyecto:
+
+```bash
+npm install
+```
+
+3. Crear un archivo `.env` en la raíz del proyecto con las variables de entorno necesarias. Por ejemplo:
+
+```
+MONGODB_URI=<tu_uri_de_mongodb>
+NODE_ENV="development"
+```
+
+---
+
+## Inicialización de la base de datos
+
+El proyecto incluye un script de seed para poblar la base de datos con datos de ejemplo. Ejecuta el siguiente comando:
+
+```bash
+npx ts-node ./src/scripts/seed.ts
+```
+
+Esto insertará los datos iniciales en tu base de datos MongoDB.
+
+---
+
+## Ejecución del proyecto
+
+Para iniciar el proyecto en modo desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+El proyecto se ejecutará normalmente en `http://localhost:3000` a menos que se indique otra configuración en las variables de entorno.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts disponibles
 
-## Learn More
+* `npm run dev` - Inicia el proyecto en modo desarrollo.
+* `npm run build` - Construye el proyecto para producción.
+* `npm start` - Ejecuta el proyecto en producción después de construirlo.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notas adicionales
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* Asegúrate de configurar correctamente las variables de entorno antes de ejecutar cualquier comando que interactúe con la base de datos.
+* El proyecto está desarrollado con Next.js, por lo que cualquier cambio en la estructura de páginas o API requiere reiniciar el servidor de desarrollo para reflejarse correctamente.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
